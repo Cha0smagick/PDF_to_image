@@ -30,9 +30,16 @@ def main():
 
         export_format = st.selectbox("Select export format", ["JPEG", "PNG"])
 
-        # Display PDF pages in a single scrollable box
-        for i, img in enumerate(images):
-            st.image(img, caption=f"Page {i + 1}", use_column_width=True)
+        # Display the first page initially
+        first_page = images[0]
+        st.image(first_page, caption="Page 1", use_column_width=True)
+
+        # Container for the rest of the pages
+        container = st.container()
+
+        # Add the rest of the pages to the container
+        for i, img in enumerate(images[1:]):
+            container.image(img, caption=f"Page {i + 2}", use_column_width=True)
 
         # Download button for the currently displayed page
         current_page = st.slider("Select Page", 1, len(images), 1)
