@@ -29,30 +29,37 @@ def main():
 
         images = pdf_to_images(pdf_bytes)
 
+        # Display PDF pages horizontally using iframe
+        pdf_display = '<div style="overflow-x: scroll; white-space: nowrap;">'
+        for i, img in enumerate(images):
+            img_bytes = BytesIO()
+            img.save(img_bytes, format="PNG")
+            base64_img = base64.b64encode(img_bytes.getvalue()).decode("utf-8")
+            pdf_display += f'<img src="data:image/png;base64,{base64_img}" alt="Page {i + 1}" style="max-width: 100%; margin-right: 10px;">'
+        pdf_display += '</div>'
+        st.markdown(pdf_display, unsafe_allow_html=True)
+
         # Dropdown menu for selecting export format
         export_format = st.selectbox("Select Export Format", ["JPEG", "PNG"])
 
         # Dropdown menu for selecting page
         selected_page = st.selectbox("Select Page", range(1, len(images) + 1))
 
-        # Display PDF page using Markdown
-        img_format = export_format.lower()
-        img_bytes = BytesIO()
-        images[selected_page - 1].save(img_bytes, format=img_format)
-        base64_img = base64.b64encode(img_bytes.getvalue()).decode("utf-8")
-        markdown_img = f'<img src="data:image/{img_format};base64,{base64_img}" alt="Page {selected_page}" style="max-width: 100%;">'
-        st.markdown(markdown_img, unsafe_allow_html=True)
-
         # Download button for the currently displayed page
         img_bytes_download = BytesIO()
-        images[selected_page - 1].save(img_bytes_download, format=img_format)
+        images[selected_page - 1].save(img_bytes_download, format=export_format.lower())
 
-        st.download_button(
-            label=f"Download Page {selected_page} as {export_format}",
-            data=img_bytes_download.getvalue(),
-            file_name=f"page_{selected_page}.{export_format.lower()}",
-            key=f"download_button_{selected_page}_{export_format}",
-        )
+        st.markdown("<br>", unsafe_allow_html=True)  # Add space between dropdowns and download button
+
+        # Center the download button
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            st.download_button(
+                label=f"Download Page {selected_page} as {export_format}",
+                data=img_bytes_download.getvalue(),
+                file_name=f"page_{selected_page}.{export_format.lower()}",
+                key=f"download_button_{selected_page}_{export_format}",
+            )
 
 if __name__ == "__main__":
     main()
