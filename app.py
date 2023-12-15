@@ -32,36 +32,26 @@ def main():
         # Dropdown menu for selecting export format
         export_format = st.selectbox("Select Export Format", ["JPEG", "PNG"])
 
-        # Display PDF pages horizontally using iframe
-        pdf_display = '<div style="overflow-x: scroll; white-space: nowrap;">'
-        for i, img in enumerate(images):
-            img_format = export_format.lower()
-            img_bytes = BytesIO()
-            img.save(img_bytes, format=img_format)
-            base64_img = base64.b64encode(img_bytes.getvalue()).decode("utf-8")
-            pdf_display += f'<img src="data:image/{img_format};base64,{base64_img}" alt="Page {i + 1}" style="max-width: 100%; margin-right: 10px;">'
+        # Dropdown menu for selecting page
+        selected_page = st.selectbox("Select Page", range(1, len(images) + 1))
 
-        pdf_display += '</div>'
-        st.markdown(pdf_display, unsafe_allow_html=True)
-
-        # Slider for navigating through pages
-        current_page = st.slider(
-            "Select Page",
-            min_value=1,
-            max_value=len(images),
-            value=1,
-            step=1
-        )
+        # Display PDF page using Markdown
+        img_format = export_format.lower()
+        img_bytes = BytesIO()
+        images[selected_page - 1].save(img_bytes, format=img_format)
+        base64_img = base64.b64encode(img_bytes.getvalue()).decode("utf-8")
+        markdown_img = f'<img src="data:image/{img_format};base64,{base64_img}" alt="Page {selected_page}" style="max-width: 100%;">'
+        st.markdown(markdown_img, unsafe_allow_html=True)
 
         # Download button for the currently displayed page
-        img_bytes = BytesIO()
-        images[current_page - 1].save(img_bytes, format=export_format.lower())
+        img_bytes_download = BytesIO()
+        images[selected_page - 1].save(img_bytes_download, format=img_format)
 
         st.download_button(
-            label=f"Download Page {current_page} as {export_format}",
-            data=img_bytes.getvalue(),
-            file_name=f"page_{current_page}.{export_format.lower()}",
-            key=f"download_button_{current_page}_{export_format}",
+            label=f"Download Page {selected_page} as {export_format}",
+            data=img_bytes_download.getvalue(),
+            file_name=f"page_{selected_page}.{export_format.lower()}",
+            key=f"download_button_{selected_page}_{export_format}",
         )
 
 if __name__ == "__main__":
