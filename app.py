@@ -1,6 +1,7 @@
 import streamlit as st
 import fitz
 from PIL import Image
+import base64
 from io import BytesIO
 
 def pdf_to_images(pdf_bytes):
@@ -30,16 +31,17 @@ def main():
 
         export_format = st.selectbox("Select export format", ["JPEG", "PNG"])
 
-        # Display the first page initially
-        first_page = images[0]
-        st.image(first_page, caption="Page 1", use_column_width=True)
+        # Display PDF pages horizontally using iframe
+        pdf_display = '<div style="overflow-x: scroll; white-space: nowrap;">'
+        for i, img in enumerate(images):
+            img_format = export_format.lower()
+            img_bytes = BytesIO()
+            img.save(img_bytes, format=img_format)
+            base64_img = base64.b64encode(img_bytes.getvalue()).decode("utf-8")
+            pdf_display += f'<img src="data:image/{img_format};base64,{base64_img}" alt="Page {i + 1}" style="max-width: 100%; margin-right: 10px;">'
 
-        # Container for the rest of the pages
-        container = st.container()
-
-        # Add the rest of the pages to the container
-        for i, img in enumerate(images[1:]):
-            container.image(img, caption=f"Page {i + 2}", use_column_width=True)
+        pdf_display += '</div>'
+        st.markdown(pdf_display, unsafe_allow_html=True)
 
         # Download button for the currently displayed page
         current_page = st.slider("Select Page", 1, len(images), 1)
