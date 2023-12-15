@@ -29,7 +29,19 @@ def main():
 
         images = pdf_to_images(pdf_bytes)
 
-        export_format = st.selectbox("Select export format", ["JPEG", "PNG"])
+        # Slider for both navigating through pages and selecting export format
+        current_page_and_format = st.slider(
+            "Select Page and Export Format",
+            min_value=1,
+            max_value=len(images),
+            value=(1, 1),  # Default: First page and first format
+            step=1
+        )
+
+        current_page, export_format_index = current_page_and_format
+
+        export_format_options = ["JPEG", "PNG"]
+        export_format = export_format_options[export_format_index - 1]
 
         # Display PDF pages horizontally using iframe
         pdf_display = '<div style="overflow-x: scroll; white-space: nowrap;">'
@@ -44,16 +56,14 @@ def main():
         st.markdown(pdf_display, unsafe_allow_html=True)
 
         # Download button for the currently displayed page
-        current_page = st.slider("Select Page", 1, len(images), 1)
-        img_format = export_format.lower()
         img_bytes = BytesIO()
-        images[current_page - 1].save(img_bytes, format=img_format)
+        images[current_page - 1].save(img_bytes, format=export_format)
 
         st.download_button(
             label=f"Download Page {current_page} as {export_format}",
             data=img_bytes.getvalue(),
-            file_name=f"page_{current_page}.{img_format}",
-            key=f"download_button_{current_page}",
+            file_name=f"page_{current_page}.{export_format.lower()}",
+            key=f"download_button_{current_page}_{export_format}",
         )
 
 if __name__ == "__main__":
