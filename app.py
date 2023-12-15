@@ -30,21 +30,22 @@ def main():
 
         export_format = st.selectbox("Select export format", ["JPEG", "PNG"])
 
+        # Display PDF pages in a single scrollable box
         for i, img in enumerate(images):
             st.image(img, caption=f"Page {i + 1}", use_column_width=True)
 
-            # Export image
-            if st.button(f"Export Page {i + 1} as {export_format}"):
-                img_format = export_format.lower()
-                img_bytes = BytesIO()
-                img.save(img_bytes, format=img_format)
+        # Download button for the currently displayed page
+        current_page = st.slider("Select Page", 1, len(images), 1)
+        img_format = export_format.lower()
+        img_bytes = BytesIO()
+        images[current_page - 1].save(img_bytes, format=img_format)
 
-                st.download_button(
-                    label=f"Download Page {i + 1} as {export_format}",
-                    data=img_bytes.getvalue(),
-                    file_name=f"page_{i + 1}.{img_format}",
-                    key=f"download_button_{i + 1}",
-                )
+        st.download_button(
+            label=f"Download Page {current_page} as {export_format}",
+            data=img_bytes.getvalue(),
+            file_name=f"page_{current_page}.{img_format}",
+            key=f"download_button_{current_page}",
+        )
 
 if __name__ == "__main__":
     main()
